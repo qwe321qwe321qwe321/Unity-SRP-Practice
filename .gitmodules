@@ -1,0 +1,4 @@
+[submodule "SRP_Practice/Assets/ScriptTemplates"]
+	path = SRP_Practice/Assets/ScriptTemplates
+	url = https://github.com/qwe321qwe321qwe321/Unity-ScriptTemplates.git
+	branch = submodule
