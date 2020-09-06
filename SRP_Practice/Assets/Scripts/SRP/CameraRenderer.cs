@@ -5,9 +5,19 @@ namespace Pedev {
     internal partial class CameraRenderer {
         ScriptableRenderContext context;
         Camera camera;
-        const string BufferName = "Render Camera";
-        CommandBuffer buffer = new CommandBuffer(){
-            name = BufferName
+        const string CameraBufferName = "Render Camera";
+        const string OpaqueBufferName = "Opaque";
+        const string TransparentBufferName = "Transparent";
+        CommandBuffer cameraBuffer = new CommandBuffer(){
+            name = CameraBufferName
+        };
+        // Beacuse of nest sampling need different buffers. 
+        // refer: https://forum.unity.com/threads/profilingsample-usage-in-custom-srp.638941/
+        CommandBuffer opaqueBuffer = new CommandBuffer(){
+            name = OpaqueBufferName
+        };
+        CommandBuffer transparentBuffer = new CommandBuffer(){
+            name = TransparentBufferName
         };
         CullingResults cullingResults;
 
@@ -30,6 +40,7 @@ namespace Pedev {
         static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
         void DrawVisibleGeometry() {
             // Draw opaque.
+            BeginSampleBuffer(opaqueBuffer);
             var sortingSettings = new SortingSettings(camera){
                 criteria = SortingCriteria.CommonOpaque
             };
@@ -38,42 +49,53 @@ namespace Pedev {
             context.DrawRenderers(
                 cullingResults, ref drawingSettings, ref filteringSettings
             );
+            EndSampleBuffer(opaqueBuffer);
 
             // Draw skybox.
             context.DrawSkybox(camera);
 
             // Draw transparent.
+            BeginSampleBuffer(transparentBuffer);
             sortingSettings.criteria = SortingCriteria.CommonTransparent;
             drawingSettings.sortingSettings = sortingSettings;
             filteringSettings.renderQueueRange = RenderQueueRange.transparent;
             context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
+            EndSampleBuffer(transparentBuffer);
         }
 
-        
+
 
         void Setup() {
             // mul unity_MatrixVP 
             this.context.SetupCameraProperties(camera);
             // Clear RT by camera parameters.
             CameraClearFlags clearFlags = camera.clearFlags;
-            buffer.ClearRenderTarget(
+            cameraBuffer.ClearRenderTarget(
                 clearFlags <= CameraClearFlags.Depth, // 除了Flags.Nothing以外都會需要清除Depth
                 clearFlags == CameraClearFlags.Color, // 只有Flags.Color需要清除，因為其他的情形要不就DepthOnly, Nothing要不然就Skybox(之後會直接蓋掉)
                 clearFlags == CameraClearFlags.Color ? // 有清Color才需要給background color.
                     camera.backgroundColor.linear : Color.clear
             );
 
-            buffer.BeginSample(SampleName);
-            ExecuteBuffer(); // 執行Clear + BeginSample
+            cameraBuffer.BeginSample(cameraBuffer.name);
+            ExecuteBuffer(cameraBuffer); // 執行Clear + BeginSample
         }
 
         void Submit() {
-            buffer.EndSample(SampleName);
-            ExecuteBuffer(); // 執行EndSample
+            EndSampleBuffer(cameraBuffer); // 執行EndSample
             this.context.Submit();
         }
 
-        void ExecuteBuffer() {
+        void BeginSampleBuffer(CommandBuffer buffer) {
+            buffer.BeginSample(buffer.name);
+            ExecuteBuffer(buffer);
+        }
+        void EndSampleBuffer(CommandBuffer buffer) {
+            buffer.EndSample(buffer.name);
+            ExecuteBuffer(buffer);
+        }
+
+        void ExecuteBuffer(CommandBuffer buffer) {
             context.ExecuteCommandBuffer(buffer);
             buffer.Clear();
         }

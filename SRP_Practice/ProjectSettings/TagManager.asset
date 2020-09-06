@@ -41,3 +41,15 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: SoringLayer1
+    uniqueID: 968719941
+    locked: 0
+  - name: SoringLayer2
+    uniqueID: 75800321
+    locked: 0
+  - name: SoringLayer3
+    uniqueID: 2833702289
+    locked: 0
+  - name: SoringLayer4
+    uniqueID: 460193289
+    locked: 0

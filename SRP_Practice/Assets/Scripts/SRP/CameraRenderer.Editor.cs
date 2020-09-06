@@ -52,10 +52,8 @@ namespace Pedev {
         }
 
         partial void PrepareBuffer() {
-            buffer.name = SampleName = camera.name;
+            cameraBuffer.name = camera.name;
         }
-#else
-        const string SampleName = BufferName;
 #endif
     }
 }
