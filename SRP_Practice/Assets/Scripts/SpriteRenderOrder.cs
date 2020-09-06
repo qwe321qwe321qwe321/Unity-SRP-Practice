@@ -32,7 +32,6 @@ namespace Pedev {
         }
 
         private void Validate() {
-            SpriteRenderer
             _Renderer.sortingLayerID = SortingLayer.layers[this.sortingLayerID].id;
             _Renderer.sortingOrder = this.orderInLayer;
             _Renderer.rendererPriority = this.rendererPriority;
