@@ -21,7 +21,11 @@ namespace Pedev {
         };
         CullingResults cullingResults;
 
-        public void Render(ScriptableRenderContext context, Camera camera) {
+        // ShaderTagId 對應到Shader內的LightMode值
+        // 預設為SRPDefaultUnlit for all unlit shader
+        static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+
+        public void Render(ScriptableRenderContext context, Camera camera, SortingCriteria opaqueSortingCrieria, SortingCriteria transparentSortingCriteria) {
             this.context = context;
             this.camera = camera;
             PrepareBuffer();
@@ -31,19 +35,20 @@ namespace Pedev {
             }
 
             Setup();
-            DrawVisibleGeometry();
+            DrawVisibleGeometry(opaqueSortingCrieria, transparentSortingCriteria);
             DrawUnsupportedShaders();
             DrawGizmos();
             Submit();
         }
-
-        static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
-        void DrawVisibleGeometry() {
+        
+        void DrawVisibleGeometry(SortingCriteria opaqueSortingCrieria, SortingCriteria transparentSortingCriteria) {
             // Draw opaque.
             BeginSampleBuffer(opaqueBuffer);
             var sortingSettings = new SortingSettings(camera){
-                criteria = SortingCriteria.CommonOpaque
+                distanceMetric = DistanceMetric.Orthographic,
+                criteria = opaqueSortingCrieria,
             };
+            
             var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings);
             var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
             context.DrawRenderers(
@@ -56,14 +61,12 @@ namespace Pedev {
 
             // Draw transparent.
             BeginSampleBuffer(transparentBuffer);
-            sortingSettings.criteria = SortingCriteria.CommonTransparent;
+            sortingSettings.criteria = transparentSortingCriteria;
             drawingSettings.sortingSettings = sortingSettings;
             filteringSettings.renderQueueRange = RenderQueueRange.transparent;
             context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
             EndSampleBuffer(transparentBuffer);
         }
-
-
 
         void Setup() {
             // mul unity_MatrixVP 
@@ -77,8 +80,7 @@ namespace Pedev {
                     camera.backgroundColor.linear : Color.clear
             );
 
-            cameraBuffer.BeginSample(cameraBuffer.name);
-            ExecuteBuffer(cameraBuffer); // 執行Clear + BeginSample
+            BeginSampleBuffer(cameraBuffer); // 執行Clear + BeginSample
         }
 
         void Submit() {

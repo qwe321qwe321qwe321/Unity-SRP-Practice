@@ -9,7 +9,6 @@ namespace Pedev {
         public int sortingLayerID = 0;
         [Range(-20, 20)]
         public int orderInLayer = 0;
-        [Range(-20, 20)]
         public int rendererPriority = 0;
 
         private Renderer m_Renderer;
@@ -33,6 +32,7 @@ namespace Pedev {
         }
 
         private void Validate() {
+            SpriteRenderer
             _Renderer.sortingLayerID = SortingLayer.layers[this.sortingLayerID].id;
             _Renderer.sortingOrder = this.orderInLayer;
             _Renderer.rendererPriority = this.rendererPriority;

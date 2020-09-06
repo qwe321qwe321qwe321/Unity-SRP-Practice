@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d9a38be9988b7141abcbb1c136494b9, type: 3}
   m_Name: MyPipeline
   m_EditorClassIdentifier: 
+  opaqueSortingCriteria: 59
+  transparentSortingCriteria: 87

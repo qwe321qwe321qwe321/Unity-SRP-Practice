@@ -6,8 +6,10 @@ using UnityEngine.Rendering;
 namespace Pedev {
     [CreateAssetMenu]
     public class MyPipelineAsset : RenderPipelineAsset {
+        public SortingCriteria opaqueSortingCriteria = SortingCriteria.CommonOpaque;
+        public SortingCriteria transparentSortingCriteria = SortingCriteria.CommonTransparent;
         protected override RenderPipeline CreatePipeline() {
-            return new MyPipeline();
+            return new MyPipeline(opaqueSortingCriteria, transparentSortingCriteria);
         }
     }
 }

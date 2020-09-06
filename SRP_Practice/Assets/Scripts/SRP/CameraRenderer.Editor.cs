@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor;
 #endif
 using UnityEngine;
@@ -22,7 +22,6 @@ namespace Pedev {
             new ShaderTagId("VertexLM")
         };
         static Material errorMaterial;
-        string SampleName { get; set; }
 
         partial void DrawUnsupportedShaders() {
             if (errorMaterial == null) {
